@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baguette des Merveilles</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cinzel', 'Georgia', serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Effet brumeux animé */
+        .fog {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .fog::before, .fog::after {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(120, 150, 180, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(100, 130, 160, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(90, 120, 150, 0.2) 0%, transparent 50%);
+            animation: drift 20s infinite linear;
+        }
+
+        .fog::after {
+            animation-duration: 30s;
+            animation-direction: reverse;
+            opacity: 0.4;
+        }
+
+        @keyframes drift {
+            from { transform: translate(-10%, -10%) rotate(0deg); }
+            to { transform: translate(10%, 10%) rotate(360deg); }
+        }
+
+        /* Particules magiques */
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            background: radial-gradient(circle, rgba(255, 215, 100, 0.8), transparent);
+            border-radius: 50%;
+            animation: float 10s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) translateX(50px); opacity: 0; }
+        }
+
+        .container {
+            text-align: center;
+            z-index: 10;
+            background: rgba(20, 20, 40, 0.8);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 0 40px rgba(100, 150, 255, 0.3), inset 0 0 20px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(150, 180, 255, 0.3);
+            max-width: 600px;
+            backdrop-filter: blur(10px);
+        }
+
+        .wand-container {
+            margin: 2rem 0;
+            position: relative;
+            height: 150px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .wand {
+            width: 120px;
+            height: auto;
+            filter: drop-shadow(0 0 20px rgba(150, 100, 255, 0.8));
+            animation: wandGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes wandGlow {
+            0%, 100% { filter: drop-shadow(0 0 20px rgba(150, 100, 255, 0.8)); }
+            50% { filter: drop-shadow(0 0 35px rgba(200, 150, 255, 1)); }
+        }
+
+        h1 {
+            color: #f0e6ff;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 20px rgba(150, 100, 255, 0.8);
+        }
+
+        .subtitle {
+            color: #b8a6d9;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            font-style: italic;
+        }
+
+        .dice-container {
+            margin: 2rem 0;
+            min-height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .dice {
+            font-size: 4rem;
+            animation: rollDice 1s ease-in-out;
+        }
+
+        @keyframes rollDice {
+            0% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(180deg) scale(1.2); }
+            50% { transform: rotate(360deg) scale(0.8); }
+            75% { transform: rotate(540deg) scale(1.2); }
+            100% { transform: rotate(720deg) scale(1); }
+        }
+
+        .roll-button {
+            background: linear-gradient(135deg, #6b4ce6 0%, #8b6ce8 100%);
+            color: white;
+            border: none;
+            padding: 1.2rem 3rem;
+            font-size: 1.3rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 25px rgba(107, 76, 230, 0.5);
+            font-family: inherit;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .roll-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 35px rgba(107, 76, 230, 0.7);
+            background: linear-gradient(135deg, #7b5ce6 0%, #9b7ce8 100%);
+        }
+
+        .roll-button:active {
+            transform: translateY(-1px);
+        }
+
+        .roll-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result {
+            margin-top: 2rem;
+            padding: 2rem;
+            background: rgba(30, 30, 60, 0.6);
+            border-radius: 15px;
+            border: 2px solid rgba(150, 180, 255, 0.4);
+            min-height: 150px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-number {
+            font-size: 3rem;
+            color: #ffd700;
+            font-weight: bold;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+            margin-bottom: 1rem;
+        }
+
+        .result-effect {
+            color: #e0d4ff;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            text-align: left;
+        }
+
+        .result-range {
+            color: #b8a6d9;
+            font-size: 0.9rem;
+            font-style: italic;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="fog"></div>
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <h1>⚡ Baguette des Merveilles ⚡</h1>
+        <p class="subtitle">Wand of Wonder - D&D 5e</p>
+
+        <div class="wand-container">
+            <svg class="wand" viewBox="0 0 200 400" xmlns="http://www.w3.org/2000/svg">
+                <!-- Baguette magique -->
+                <defs>
+                    <linearGradient id="wandGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#8b6ce8;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#4a3089;stop-opacity:1" />
+                    </linearGradient>
+                    <radialGradient id="gemGlow">
+                        <stop offset="0%" style="stop-color:#fff;stop-opacity:1" />
+                        <stop offset="50%" style="stop-color:#a78bfa;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#6b4ce6;stop-opacity:1" />
+                    </radialGradient>
+                </defs>
+                
+                <!-- Corps de la baguette -->
+                <path d="M 95 350 L 90 50 L 100 10 L 110 50 L 105 350 Z" fill="url(#wandGradient)" stroke="#2d1b5e" stroke-width="2"/>
+                
+                <!-- Détails ornementaux -->
+                <circle cx="100" cy="80" r="3" fill="#ffd700"/>
+                <circle cx="100" cy="120" r="3" fill="#ffd700"/>
+                <circle cx="100" cy="160" r="3" fill="#ffd700"/>
+                
+                <!-- Gemme au sommet -->
+                <circle cx="100" cy="25" r="15" fill="url(#gemGlow)"/>
+                <circle cx="100" cy="25" r="10" fill="#a78bfa" opacity="0.8"/>
+                
+                <!-- Éclairs magiques -->
+                <path d="M 100 25 L 95 10 L 98 10 L 93 0" stroke="#ffd700" stroke-width="2" fill="none" opacity="0.6"/>
+                <path d="M 100 25 L 105 10 L 102 10 L 107 0" stroke="#ffd700" stroke-width="2" fill="none" opacity="0.6"/>
+            </svg>
+        </div>
+
+        <button class="roll-button" id="rollBtn" onclick="rollWand()">
+            🎲 Lancer la Baguette (d100)
+        </button>
+
+        <div class="dice-container" id="diceContainer"></div>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const effects = {
+            '01-05': 'Vous lancez <strong>Lueurs féeriques</strong> (Faerie Fire).',
+            '06-10': 'Vous êtes <strong>étourdi</strong> jusqu\'au début de votre prochain tour, croyant que quelque chose d\'extraordinaire vient de se produire.',
+            '11-15': 'Vous lancez <strong>Bourrasque</strong> (Gust of Wind).',
+            '16-20': 'Vous lancez <strong>Détection des pensées</strong> (Detect Thoughts) sur la cible choisie. Si vous n\'avez pas ciblé une créature, vous subissez 1d6 dégâts psychiques.',
+            '21-25': 'Vous lancez <strong>Nuage puant</strong> (Stinking Cloud).',
+            '26-30': 'Une <strong>pluie</strong> tombe dans un rayon de 60 pieds autour de la cible. La zone est légèrement obscurcie. La pluie dure jusqu\'au début de votre prochain tour.',
+            '31-33': 'Un animal apparaît dans l\'espace inoccupé le plus proche de la cible : 1-25 = <strong>Rhinocéros</strong>, 26-50 = <strong>Éléphant</strong>, 51-100 = <strong>Rat</strong>.',
+            '34-36': 'Vous lancez <strong>Éclair</strong> (Lightning Bolt).',
+            '37-46': 'Un nuage de 600 <strong>papillons</strong> remplit un espace de 30 pieds autour de la cible. La zone est fortement obscurcie. Les papillons restent 10 minutes.',
+            '47-49': 'Vous lancez <strong>Agrandissement/Rapetissement</strong> (Enlarge/Reduce). Si la cible ne peut être affectée ou si vous n\'avez pas ciblé une créature, vous devenez la cible.',
+            '50-53': 'Vous lancez <strong>Ténèbres</strong> (Darkness).',
+            '54-58': 'De l\'<strong>herbe</strong> pousse sur le sol dans un rayon de 60 pieds autour de la cible. Si l\'herbe est déjà présente, elle pousse dix fois plus normalement et reste ainsi pendant 1 minute.',
+            '59-62': 'Un objet de votre choix disparaît dans le <strong>Plan Éthéré</strong>. L\'objet ne doit pas être porté ni transporté, dans un rayon de 120 pieds, et pas plus grand que 10 pieds.',
+            '63-65': 'Vous rétrécissez comme si vous aviez lancé <strong>Agrandissement/Rapetissement</strong> sur vous-même.',
+            '66-69': 'Vous lancez <strong>Boule de feu</strong> (Fireball).',
+            '70-79': 'Vous lancez <strong>Invisibilité</strong> sur vous-même.',
+            '80-84': '<strong>Feuilles</strong> poussent sur la cible. Si vous avez choisi un point dans l\'espace, les feuilles poussent à la place sur la créature la plus proche. Les feuilles tombent après 24 heures sauf si elles sont arrachées.',
+            '85-87': 'Un jet de <strong>1d4 × 10 gemmes</strong>, chacune valant 1 po, jaillit de la baguette dans une ligne de 30 pieds de long et 5 pieds de large. Chaque gemme inflige 1 dégât contondant et le total ne dépasse pas 5d4.',
+            '88-90': 'Un souffle de <strong>musique colorée</strong> jaillit de la baguette sur un cône de 30 pieds. Chaque créature doit réussir un jet de sauvegarde de Constitution DD 15 ou être <strong>aveuglée</strong> pendant 1 minute (nouveau jet à chaque tour).',
+            '91-95': 'Vous lancez <strong>Pétrification</strong>. La cible doit réussir un jet de sauvegarde de Constitution DD 15. En cas d\'échec avec un 1 naturel, elle est <strong>pétrifiée</strong>. Sinon, elle est <strong>entravée</strong> et commence à se transformer en pierre (nouveau jet au tour suivant).',
+            '96-97': 'Vous <strong>récupérez 2d10 points de vie</strong>.',
+            '98-00': 'Vous vous transformez en <strong>plante en pot</strong> jusqu\'au début de votre prochain tour. En tant que plante, vous êtes incapacité et vulnérable à tous les dégâts. Si vous tombez à 0 PV, votre pot se brise et vous reprenez votre forme.'
+        };
+
+        function getEffect(roll) {
+            for (let range in effects) {
+                const [min, max] = range.split('-').map(Number);
+                if (roll >= min && roll <= max) {
+                    return { range, effect: effects[range] };
+                }
+            }
+            return { range: '??', effect: 'Effet inconnu...' };
+        }
+
+        let isRolling = false;
+
+        function rollWand() {
+            if (isRolling) return;
+            
+            isRolling = true;
+            const btn = document.getElementById('rollBtn');
+            btn.disabled = true;
+            
+            const diceContainer = document.getElementById('diceContainer');
+            const resultDiv = document.getElementById('result');
+            
+            resultDiv.innerHTML = '';
+            diceContainer.innerHTML = '<div class="dice">🎲</div>';
+            
+            setTimeout(() => {
+                const roll = Math.floor(Math.random() * 100) + 1;
+                const rollFormatted = roll.toString().padStart(2, '0');
+                const { range, effect } = getEffect(roll);
+                
+                diceContainer.innerHTML = '';
+                
+                resultDiv.innerHTML = `
+                    <div class="result">
+                        <div class="result-number">${rollFormatted}</div>
+                        <div class="result-range">🔮 Résultat : ${range}</div>
+                        <div class="result-effect">${effect}</div>
+                    </div>
+                `;
+                
+                isRolling = false;
+                btn.disabled = false;
+            }, 1000);
+        }
+
+        // Créer des particules magiques
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.width = (Math.random() * 3 + 2) + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.animationDelay = Math.random() * 10 + 's';
+                particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        createParticles();
+    </script>
+</body>
+</html>
