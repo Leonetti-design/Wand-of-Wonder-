@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="eng">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Baguette des Merveilles</title>
+    <link rel="icon" type="image/jpeg" href="https://st5.depositphotos.com/5532432/62537/v/450/depositphotos_625372224-stock-illustration-magic-wand-simple-illustration.jpg">
     <style>
         * {
             margin: 0;
@@ -19,18 +20,20 @@
             align-items: center;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             position: relative;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
+            padding: 40px 20px;
         }
 
-        /* Effet brumeux animé */
         .fog {
-            position: absolute;
+            position: fixed;
             width: 100%;
             height: 100%;
             top: 0;
             left: 0;
             pointer-events: none;
             opacity: 0.6;
+            z-index: 1;
         }
 
         .fog::before, .fog::after {
@@ -57,13 +60,15 @@
             to { transform: translate(10%, 10%) rotate(360deg); }
         }
 
-        /* Particules magiques */
         .particles {
-            position: absolute;
+            position: fixed;
             width: 100%;
             height: 100%;
             overflow: hidden;
             pointer-events: none;
+            top: 0;
+            left: 0;
+            z-index: 1;
         }
 
         .particle {
@@ -89,11 +94,13 @@
             box-shadow: 0 0 40px rgba(100, 150, 255, 0.3), inset 0 0 20px rgba(0, 0, 0, 0.5);
             border: 2px solid rgba(150, 180, 255, 0.3);
             max-width: 600px;
+            width: 100%;
             backdrop-filter: blur(10px);
+            position: relative;
         }
 
         .wand-container {
-            margin: 2rem 0;
+            margin: 2.5rem 0;
             position: relative;
             height: 150px;
             display: flex;
@@ -106,6 +113,7 @@
             height: auto;
             filter: drop-shadow(0 0 20px rgba(150, 100, 255, 0.8));
             animation: wandGlow 3s ease-in-out infinite;
+            transition: transform 0.3s ease;
         }
 
         @keyframes wandGlow {
@@ -123,12 +131,12 @@
         .subtitle {
             color: #b8a6d9;
             font-size: 1.1rem;
-            margin-bottom: 2rem;
+            margin-bottom: 5rem;
             font-style: italic;
         }
 
         .dice-container {
-            margin: 2rem 0;
+            margin: 0.5rem 0;
             min-height: 120px;
             display: flex;
             justify-content: center;
@@ -180,7 +188,7 @@
         }
 
         .result {
-            margin-top: 2rem;
+            margin-top: 0.5rem;
             padding: 2rem;
             background: rgba(30, 30, 60, 0.6);
             border-radius: 15px;
@@ -215,6 +223,27 @@
             font-style: italic;
             margin-bottom: 0.5rem;
         }
+
+        /* Animation fumée violette */
+        .smoke-particle {
+            position: fixed;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(139, 108, 232, 0.9), rgba(107, 76, 230, 0.5), transparent);
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 2rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -226,8 +255,7 @@
         <p class="subtitle">Wand of Wonder - D&D 5e</p>
 
         <div class="wand-container">
-            <svg class="wand" viewBox="0 0 200 400" xmlns="http://www.w3.org/2000/svg">
-                <!-- Baguette magique -->
+            <svg class="wand" id="wandIcon" viewBox="0 0 200 400" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                     <linearGradient id="wandGradient" x1="0%" y1="0%" x2="0%" y2="100%">
                         <stop offset="0%" style="stop-color:#8b6ce8;stop-opacity:1" />
@@ -240,25 +268,21 @@
                     </radialGradient>
                 </defs>
                 
-                <!-- Corps de la baguette -->
                 <path d="M 95 350 L 90 50 L 100 10 L 110 50 L 105 350 Z" fill="url(#wandGradient)" stroke="#2d1b5e" stroke-width="2"/>
                 
-                <!-- Détails ornementaux -->
                 <circle cx="100" cy="80" r="3" fill="#ffd700"/>
                 <circle cx="100" cy="120" r="3" fill="#ffd700"/>
                 <circle cx="100" cy="160" r="3" fill="#ffd700"/>
                 
-                <!-- Gemme au sommet -->
                 <circle cx="100" cy="25" r="15" fill="url(#gemGlow)"/>
                 <circle cx="100" cy="25" r="10" fill="#a78bfa" opacity="0.8"/>
                 
-                <!-- Éclairs magiques -->
                 <path d="M 100 25 L 95 10 L 98 10 L 93 0" stroke="#ffd700" stroke-width="2" fill="none" opacity="0.6"/>
                 <path d="M 100 25 L 105 10 L 102 10 L 107 0" stroke="#ffd700" stroke-width="2" fill="none" opacity="0.6"/>
             </svg>
         </div>
 
-        <button class="roll-button" id="rollBtn" onclick="rollWand()">
+        <button class="roll-button" id="rollBtn">
             🎲 Lancer la Baguette (d100)
         </button>
 
@@ -304,6 +328,43 @@
 
         let isRolling = false;
 
+        // Animation fumée violette
+        function createPurpleSmoke() {
+            const btn = document.getElementById('rollBtn');
+            const rect = btn.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            for (let i = 0; i < 60; i++) {
+                setTimeout(() => {
+                    const particle = document.createElement('div');
+                    particle.className = 'smoke-particle';
+                    document.body.appendChild(particle);
+
+                    const angle = (Math.random() * 360) * (Math.PI / 180);
+                    const distance = Math.random() * 250 + 80;
+                    const duration = 600 + Math.random() * 300;
+
+                    particle.style.left = centerX + 'px';
+                    particle.style.top = centerY + 'px';
+                    particle.style.opacity = '0';
+
+                    setTimeout(() => {
+                        particle.style.transition = `all ${duration}ms ease-out`;
+                        particle.style.left = (centerX + Math.cos(angle) * distance) + 'px';
+                        particle.style.top = (centerY + Math.sin(angle) * distance) + 'px';
+                        particle.style.opacity = '1';
+                        particle.style.transform = 'scale(1.8)';
+
+                        setTimeout(() => {
+                            particle.style.opacity = '0';
+                            setTimeout(() => particle.remove(), 250);
+                        }, duration / 2);
+                    }, 5);
+                }, i * 10);
+            }
+        }
+
         function rollWand() {
             if (isRolling) return;
             
@@ -318,26 +379,30 @@
             diceContainer.innerHTML = '<div class="dice">🎲</div>';
             
             setTimeout(() => {
-                const roll = Math.floor(Math.random() * 100) + 1;
-                const rollFormatted = roll.toString().padStart(2, '0');
-                const { range, effect } = getEffect(roll);
-                
                 diceContainer.innerHTML = '';
                 
-                resultDiv.innerHTML = `
-                    <div class="result">
-                        <div class="result-number">${rollFormatted}</div>
-                        <div class="result-range">🔮 Résultat : ${range}</div>
-                        <div class="result-effect">${effect}</div>
-                    </div>
-                `;
+                // FUMÉE VIOLETTE
+                createPurpleSmoke();
                 
-                isRolling = false;
-                btn.disabled = false;
+                setTimeout(() => {
+                    const roll = Math.floor(Math.random() * 100) + 1;
+                    const rollFormatted = roll.toString().padStart(2, '0');
+                    const { range, effect } = getEffect(roll);
+                    
+                    resultDiv.innerHTML = `
+                        <div class="result">
+                            <div class="result-number">${rollFormatted}</div>
+                            <div class="result-range">🔮 Résultat : ${range}</div>
+                            <div class="result-effect">${effect}</div>
+                        </div>
+                    `;
+                    
+                    isRolling = false;
+                    btn.disabled = false;
+                }, 1200);
             }, 1000);
         }
 
-        // Créer des particules magiques
         function createParticles() {
             const container = document.getElementById('particles');
             for (let i = 0; i < 20; i++) {
@@ -352,7 +417,26 @@
             }
         }
 
+        function shakeWand() {
+            const wand = document.getElementById('wandIcon');
+            wand.style.transform = 'rotate(-10deg)';
+            setTimeout(() => {
+                wand.style.transform = 'rotate(10deg)';
+                setTimeout(() => {
+                    wand.style.transform = 'rotate(-5deg)';
+                    setTimeout(() => {
+                        wand.style.transform = 'rotate(5deg)';
+                        setTimeout(() => {
+                            wand.style.transform = 'rotate(0deg)';
+                        }, 100);
+                    }, 100);
+                }, 100);
+            }, 100);
+        }
+
+        document.getElementById('rollBtn').addEventListener('click', rollWand);
         createParticles();
+        setInterval(shakeWand, 3000);
     </script>
 </body>
 </html>
